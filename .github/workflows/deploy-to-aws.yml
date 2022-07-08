@@ -96,7 +96,7 @@ jobs:
     - name: Load build into S3
       uses: jakejarvis/s3-sync-action@master
       with:
-        args: --acl public-read --follow-symlinks --delete
+        args: --acl public-read --delete
       env:
         AWS_S3_BUCKET: ${{ needs.terraform.outputs.bucket_name }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
