@@ -65,6 +65,7 @@ jobs:
     - name: Get Cloudfront distribution and bucket name
       id: terraform_outputs
       run: |
+        echo $(terraform output cloudfront_distribution)
         echo "::set-output name=CLOUDFRONT_DISTRIBUTION::$(terraform output cloudfront_distribution)"
         echo "::set-output name=BUCKET_NAME::$(terraform output bucket_name)"
 
@@ -95,16 +96,16 @@ jobs:
       with:
         args: --acl public-read --follow-symlinks --delete
       env:
-        AWS_S3_BUCKET: ${{ needs.terraform_outputs.outputs.bucket_name }}
+        AWS_S3_BUCKET: ${{ needs.terraform.terraform_outputs.outputs.bucket_name }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
         AWS_REGION: "${{ secrets.AWS_REGION }}" 
-        SOURCE_DIR: "dist"
+        SOURCE_DIR: "./webapp/dist"
     
     - name: Invalidate CloudFront
       uses: chetan/invalidate-cloudfront-action@v2
       env:
-        DISTRIBUTION: ${{ needs.terraform_outputs.outputs.cloudfront_distribution }}
+        DISTRIBUTION: ${{ needs.terraform.terraform_outputs.outputs.cloudfront_distribution }}
         PATHS: "/*"
         AWS_REGION: "us-east-1"
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
