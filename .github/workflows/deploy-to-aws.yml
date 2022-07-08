@@ -107,7 +107,8 @@ jobs:
     - name: Invalidate CloudFront
       uses: chetan/invalidate-cloudfront-action@v2
       env:
-        DISTRIBUTION: ${{ needs.terraform.outputs.cloudfront_distribution }}
+        # DISTRIBUTION: ${{ needs.terraform.outputs.cloudfront_distribution }}
+        DISTRIBUTION: EW19M2G7GECPS
         PATHS: "/*"
         AWS_REGION: ${{ secrets.AWS_REGION }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
