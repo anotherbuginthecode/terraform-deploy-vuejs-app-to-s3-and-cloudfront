@@ -65,8 +65,8 @@ jobs:
     - name: Get Cloudfront distribution and bucket name
       id: terraform_outputs
       run: |
-        export CLOUDFRONT_DISTRIBUTION="$(terraform output cloudfront_distribution)"
-        export BUCKET_NAME="$(terraform output bucket_name)"
+        export CLOUDFRONT_DISTRIBUTION="$(terraform output cloudfront_distribution | tr -d '"')"
+        export BUCKET_NAME="$(terraform output bucket_name | tr -d '"')"
 
         echo "::set-output name=CLOUDFRONT_DISTRIBUTION::${CLOUDFRONT_DISTRIBUTION}"
         echo "::set-output name=BUCKET_NAME::${BUCKET_NAME}"
@@ -107,8 +107,7 @@ jobs:
     - name: Invalidate CloudFront
       uses: chetan/invalidate-cloudfront-action@v2
       env:
-        # DISTRIBUTION: ${{ needs.terraform.outputs.cloudfront_distribution }}
-        DISTRIBUTION: EW19M2G7GECPS
+        DISTRIBUTION: ${{ needs.terraform.outputs.cloudfront_distribution }}
         PATHS: "/*"
         AWS_REGION: ${{ secrets.AWS_REGION }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
