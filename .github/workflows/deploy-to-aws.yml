@@ -93,16 +93,16 @@ jobs:
         npm install
         npm run build
 
-    - name: Load build into S3
-      uses: jakejarvis/s3-sync-action@master
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
       with:
-        args: --acl public-read --delete
-      env:
-        AWS_S3_BUCKET: ${{ needs.terraform.outputs.bucket_name }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: "${{ secrets.AWS_REGION }}" 
-        SOURCE_DIR: "./webapp/dist"
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Deploy static site to S3 bucket
+      working-directory: ./webapp
+      run: aws s3 sync ./dist/* s3://${{ needs.terraform.outputs.bucket_name }} --delete
     
     - name: Invalidate CloudFront
       uses: chetan/invalidate-cloudfront-action@v2
