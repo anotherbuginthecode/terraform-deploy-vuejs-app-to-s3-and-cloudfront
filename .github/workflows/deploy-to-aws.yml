@@ -1,0 +1,111 @@
+name: Deploy to S3 and Cloudfront
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  terraform:
+    name:  IAC Provisioning
+    runs-on: ubuntu-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./terraform
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        terraform_wrapper: false
+
+    - name: Setup Terraform backend variables
+      working-directory: ./terraform
+      id: backend
+      run: |-
+        cat > backend.tfvars <<EOF
+        access_key = "${{ secrets.AWS_ACCESS_KEY }}"
+        secret_key = "${{ secrets.AWS_SECRET_KEY }}"
+        region = "${{ secrets.AWS_REGION }}"
+        EOF
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init --backend-config="backend.tfvars"
+
+    # Format all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format Check
+      run: terraform fmt -check
+
+    - name: Setup Terraform variables
+      working-directory: ./terraform
+      id: vars
+      run: |-
+        cat > pipeline.tfvars <<EOF
+        access_key = "${{ secrets.AWS_ACCESS_KEY }}"
+        secret_key = "${{ secrets.AWS_SECRET_KEY }}"
+        region = "${{ secrets.AWS_REGION }}"
+        EOF
+    # On push to "main", build or change infrastructure according to Terraform configuration files
+    - name: Terraform Apply
+      id: apply
+      if: ${{ github.ref }} == 'main' && ${{ github.event_name }} == 'push'
+      run: terraform apply --auto-approve --var-file=pipeline.tfvars
+    - name: Get Cloudfront distribution
+      id: cloudfront
+      run: |
+        echo "::set-output name=CLOUDFRONT_DISTRIBUTION::$(terraform output cloudfront_distribution)"
+    outputs:
+      cloudfront_distribution: ${{ steps.cloudfront.outputs.CLOUDFRONT_DISTRIBUTION }}
+
+  
+  webapp:
+    needs: terraform
+    name:  Deploy webapp
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - uses: actions/checkout@v3
+    - name: Setup node.js environment
+      uses: actions/setup-node@v3
+    
+    - name: Install dependencies and build
+      working-directory: ./webapp
+      run: |
+        npm install
+        npm run build
+
+    - name: Load build into S3
+      uses: jakejarvis/s3-sync-action@master
+      with:
+        args: --acl public-read --follow-symlinks --delete
+      env:
+        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+        AWS_REGION: "${{ secrets.AWS_REGION }}" 
+        SOURCE_DIR: "dist"
+    
+    - name: Invalidate CloudFront
+      uses: chetan/invalidate-cloudfront-action@v2
+      env:
+        DISTRIBUTION: ${{ needs.cloudfront.outputs.cloudfront_distribution }}
+        PATHS: "/*"
+        AWS_REGION: "us-east-1"
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+
+
