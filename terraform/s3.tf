@@ -11,7 +11,7 @@ resource "aws_s3_bucket_acl" "website" {
   acl = "private"
 }
 
-resource "aws_s3_bucket_versioning" "websicte" {
+resource "aws_s3_bucket_versioning" "website" {
   bucket = aws_s3_bucket.website.id
   versioning_configuration {
     status = "Disabled"
@@ -36,14 +36,14 @@ resource "aws_s3_bucket_website_configuration" "website" {
 resource "aws_s3_bucket_cors_configuration" "website" {
   bucket = aws_s3_bucket.website.bucket
 
-# enable CORS on PUT and POST request
-#   cors_rule {
-#     allowed_headers = ["*"]
-#     allowed_methods = ["PUT", "POST"]
-#     allowed_origins = ["<ALLOWED_ORIGINS_LIST>"]
-#     expose_headers  = ["ETag"]
-#     max_age_seconds = 3000
-#   }
+# enable CORS
+  # cors_rule {
+  #   allowed_headers = ["*"]
+  #   allowed_methods = ["PUT", "POST"]
+  #   allowed_origins = ["<ALLOWED_ORIGINS_LIST>"]
+  #   expose_headers  = ["ETag"]
+  #   max_age_seconds = 3000
+  # }
 
   cors_rule {
     allowed_methods = ["GET"]

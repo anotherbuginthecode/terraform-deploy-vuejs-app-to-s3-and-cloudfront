@@ -2,6 +2,10 @@
 # Cloudfront service
 #################################
 
+locals {
+  s3_origin_id = "anotherbuginthecode.sandbox.com"
+}
+
 resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
   comment = "OAI for anotherbuginthecode.sandbox.com"
 }
