@@ -88,6 +88,8 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   #   }
   # }
 
+  restrictions {}
+
   viewer_certificate {
     cloudfront_default_certificate = true
   }
