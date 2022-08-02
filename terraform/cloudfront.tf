@@ -88,7 +88,11 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   #   }
   # }
 
-  restrictions {}
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
 
   viewer_certificate {
     cloudfront_default_certificate = true
