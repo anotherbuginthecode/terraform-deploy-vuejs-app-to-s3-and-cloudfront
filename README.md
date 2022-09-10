@@ -8,7 +8,7 @@ The infrastructure was provided using Terraform.
 
 GitHub actions were used to update the infra and deploy the new version of the web app into the S3 bucket and invalidate the CloudFront Cache.
 
-A full explanation of the project can be found in my article written in medium here.
+A full explanation of the project can be found in my article written in medium [here](https://betterprogramming.pub/deploy-a-cost-effective-vue-js-web-app-on-aws-with-terraform-and-github-actions-f84fb8df6d17).
 
 ## Repository structure
 
@@ -34,3 +34,5 @@ If you want to run Terraform locally:
 ``` 
 terraform plan -var-file=terraform.tfvars -out=out.terraform; terraform apply out.terraform; rm out.terraform
 ```
+
+[![buymeacoffee](https://i.imgur.com/dcDxHET.png)](https://www.buymeacoffee.com/mangonedev)
