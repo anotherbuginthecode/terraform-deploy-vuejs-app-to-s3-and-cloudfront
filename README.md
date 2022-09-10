@@ -35,4 +35,4 @@ If you want to run Terraform locally:
 terraform plan -var-file=terraform.tfvars -out=out.terraform; terraform apply out.terraform; rm out.terraform
 ```
 
-[![buymeacoffee](https://i.imgur.com/dcDxHET.png)](https://www.buymeacoffee.com/mangonedev)
+[![buymeacoffee](https://i.imgur.com/PcXxuL3.png)](https://www.buymeacoffee.com/mangonedev)
